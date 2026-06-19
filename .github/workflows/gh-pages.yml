@@ -1,0 +1,52 @@
+name: gh-pages
+
+on:
+  push:
+    paths-ignore:
+      - README.md
+      - LICENSE.md
+      - .gitignore
+    branches: ["*"]
+  release:
+    types: [created, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+      SPEC: openid-cross-federation-trust-marks-1_0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xml2rfc
+        run: |
+          pip install --upgrade pip
+          pip install sortedcontainers
+          pip install xml2rfc
+
+      - name: Create html folder
+        run: mkdir -p html
+
+      - name: Build specification
+        run: xml2rfc --html $SPEC.xml --out html/$BRANCH_NAME.html
+
+      - name: Deploy to GitHub Pages
+        if: success()
+        uses: crazy-max/ghaction-github-pages@v2
+        with:
+          target_branch: gh-pages
+          build_dir: html
+          keep_history: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

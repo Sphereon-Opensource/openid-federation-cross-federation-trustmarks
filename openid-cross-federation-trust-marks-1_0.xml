@@ -1,0 +1,836 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type='text/xsl' href='http://xml2rfc.tools.ietf.org/authoring/rfc2629.xslt' ?>
+<!DOCTYPE rfc PUBLIC "-//IETF//DTD RFC 2629//EN"
+        "http://xml2rfc.tools.ietf.org/authoring/rfc2629.dtd">
+<!--
+  NOTE:  This XML file is input used to produce the authoritative copy of an
+  OpenID Foundation specification.  The authoritative copy is the HTML output.
+  This XML source file is not authoritative.  The statement ipr="none" is
+  present only to satisfy the document compilation tool and is not indicative
+  of the IPR status of this specification.  The IPR for this specification is
+  described in the "Notices" section.  This is a public document and not a
+  private document, as the private="..." declaration could be taken to indicate.
+-->
+<rfc category="std" docName="openid-cross-federation-trust-marks-1_0" ipr="none"
+     submissionType="IETF" consensus="true"
+     xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <?rfc toc="yes" ?>
+  <?rfc tocdepth="5" ?>
+  <?rfc symrefs="yes" ?>
+  <?rfc sortrefs="yes"?>
+  <?rfc strict="yes" ?>
+  <?rfc iprnotified="no" ?>
+  <?rfc private="Draft 0.1" ?>
+
+  <front>
+    <title abbrev="Cross-Federation Trust Marks">Cross-Federation Trust via OpenID Federation Trust Marks</title>
+
+    <!-- TODO: complete author details before publication. -->
+    <author fullname="Niels" initials="N." role="editor" surname="(editor)">
+      <organization>Sphereon</organization>
+      <address>
+        <email>editor@example.com</email>
+      </address>
+    </author>
+
+    <date day="19" month="June" year="2026"/>
+
+    <workgroup>Independent Draft</workgroup>
+
+    <keyword>OpenID</keyword>
+    <keyword>OpenID Federation</keyword>
+    <keyword>Trust Mark</keyword>
+    <keyword>Trust Anchor</keyword>
+    <keyword>Verifiable Credential</keyword>
+    <keyword>Cross-Federation</keyword>
+
+    <abstract>
+      <t>
+        OpenID Federation 1.1 establishes trust between two Entities by
+        resolving a Trust Chain to a common Trust Anchor. This requirement
+        prevents a Relying Party in one federation from trusting an Entity whose
+        Entity Statements are anchored only in a different federation, unless a
+        common superior Trust Anchor or out-of-band cross-configuration exists.
+      </t>
+      <t>
+        This profile defines how a Trust Mark issued within an Accrediting
+        Federation can carry the information needed for a Relying Party in that
+        federation to establish trust in a Credential Issuer anchored in a
+        separate Subject Federation, without a shared Trust Anchor and without
+        pre-configuring the Subject Federation's Trust Anchor. It further defines
+        how such a Trust Mark is bound to the Verifiable Credentials issued by
+        that Credential Issuer using the W3C Verifiable Credentials Data Model.
+      </t>
+    </abstract>
+  </front>
+
+  <middle>
+
+    <section anchor="Introduction" title="Introduction">
+      <t>
+        In a typical OpenID Federation deployment a Relying Party trusts one or
+        more Trust Anchors that are configured out of band. An Entity is trusted
+        when a valid Trust Chain can be resolved from that Entity to one of those
+        configured Trust Anchors (<xref target="OpenID.Federation"/>, Section
+        10). Trust Marks (Section 7) are evaluated separately: a Trust Mark is a
+        signed JWT asserting that its subject conforms to a set of criteria
+        defined by an accreditation authority, and a Relying Party trusts a Trust
+        Mark when the Trust Mark Issuer is recognized for that Trust Mark type by
+        a Trust Anchor the Relying Party uses.
+      </t>
+      <t>
+        This profile addresses the case in which the accreditation and the
+        accredited Entity live in different federations:
+        <list style="symbols">
+          <t>The Credential Issuer is a Leaf Entity whose Entity Statements are
+          anchored in the Subject Federation.</t>
+          <t>The accreditation is expressed as a Trust Mark issued by a Trust
+          Mark Issuer recognized in the Accrediting Federation.</t>
+          <t>A Relying Party that trusts the Accrediting Federation's Trust
+          Anchor needs to trust the accreditation and to verify the authenticity
+          of the Credential Issuer and its issued Credentials, even though it
+          does not natively trust the Subject Federation's Trust Anchor.</t>
+        </list>
+      </t>
+      <t>
+        The mechanism is to convey, inside the Trust Mark, the identity and keys
+        of the Subject Federation's Trust Anchor, so the Relying Party can
+        resolve and validate the Credential Issuer's Trust Chain on the basis of
+        a Trust Mark it already trusts.
+      </t>
+
+      <section anchor="requirements-language" title="Requirements Notation and Conventions">
+        <t>
+          The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+          "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+          "OPTIONAL" in this document are to be interpreted as described in BCP
+          14 <xref target="RFC2119"/> <xref target="RFC8174"/> when, and only
+          when, they appear in all capitals, as shown here.
+        </t>
+        <t>
+          This profile uses the terms defined in <xref
+          target="OpenID.Federation"/>. Unless otherwise stated, all
+          base-specification processing rules continue to apply; this profile
+          only adds requirements.
+        </t>
+      </section>
+
+      <section anchor="Terminology" title="Terminology">
+        <t>
+          This profile defines the following terms in addition to those of <xref
+          target="OpenID.Federation"/>.
+          <list style="hanging">
+            <t hangText="Accrediting Federation (AF):">The federation whose Trust
+            Anchor recognizes the Trust Mark Issuer for the Trust Mark type
+            defined by a deployment of this profile, via the
+            <spanx style="verb">trust_mark_issuers</spanx> Claim.</t>
+            <t hangText="Subject Federation (SF):">The federation in which the
+            Credential Issuer is a Leaf Entity and whose Trust Anchor is
+            authoritative for that Credential Issuer's Entity Statements.</t>
+            <t hangText="Subject Trust Anchor:">The Trust Anchor of the Subject
+            Federation, at which the Credential Issuer's Trust Chain
+            terminates.</t>
+            <t hangText="Credential Issuer (CI):">The Entity that issues
+            Verifiable Credentials and that is the <spanx style="verb">sub</spanx>
+            of the Trust Mark. The Credential Issuer is a Leaf Entity in the
+            Subject Federation.</t>
+            <t hangText="Trust Mark Issuer (TMI):">The accreditation authority
+            that issues the Trust Mark, recognized in the Accrediting Federation.
+            Defined in <xref target="OpenID.Federation"/>.</t>
+            <t hangText="Relying Party (RP):">The party consuming the Verifiable
+            Credential (the Verifier), which trusts the Accrediting Federation's
+            Trust Anchor.</t>
+          </list>
+        </t>
+        <t>
+          The Accrediting Federation and the Subject Federation MAY be operated
+          by different organizations and MUST NOT be assumed to share a Trust
+          Anchor.
+        </t>
+      </section>
+
+      <section anchor="relationship" title="Relationship to OpenID Federation 1.1">
+        <t>
+          This document is a profile (extension) of <xref
+          target="OpenID.Federation"/>. It defines additional Claims that appear
+          within Trust Mark JWTs (Section 7.1 of the base specification permits
+          additional members), additional Relying Party processing rules, and a
+          binding of Trust Marks to Verifiable Credentials. It introduces no
+          changes to Entity Statement, Trust Chain, or Federation Endpoint
+          processing.
+        </t>
+      </section>
+    </section>
+
+    <section anchor="architecture" title="Architecture">
+      <t>
+        An Entity acting under this profile participates in two distinct and
+        orthogonal trust relationships:
+        <list style="numbers">
+          <t>Accreditation recognition (Accrediting Federation). The Relying
+          Party trusts the Trust Mark because the Trust Mark Issuer is recognized
+          by the AF Trust Anchor for the relevant Trust Mark type. This is the
+          standard Trust Mark trust model of <xref target="OpenID.Federation"/>,
+          Section 7.</t>
+          <t>Credential Issuer authenticity (Subject Federation). The Relying
+          Party establishes the Credential Issuer's keys and metadata by
+          resolving a Trust Chain that terminates at the Subject Trust Anchor.
+          The Relying Party learns to trust the Subject Trust Anchor from the
+          Trust Mark, which pins that Trust Anchor's identity and keys.</t>
+        </list>
+      </t>
+      <t>
+        These two relationships meet only at the Relying Party. The Trust Mark
+        Issuer's own Trust Chain MUST resolve to a Trust Anchor the Relying Party
+        trusts (the AF Trust Anchor); the Credential Issuer's Trust Chain
+        resolves to the Subject Trust Anchor pinned in the Trust Mark.
+      </t>
+      <t>
+        The recognition of the Trust Mark Issuer cannot itself be bootstrapped
+        from the Trust Mark, because that recognition is the root of the Relying
+        Party's trust in the accreditation. Consequently, this profile pins only
+        the Subject Trust Anchor inside the Trust Mark; the Trust Mark Issuer MUST
+        be recognized natively in the Accrediting Federation (<xref
+        target="trust-domains"/>).
+      </t>
+    </section>
+
+    <section anchor="tm-type" title="Trust Mark Type">
+      <t>
+        A deployment of this profile MUST define one Trust Mark type identifier,
+        owned by the Accrediting Federation. The Trust Mark type identifier is a
+        URL, collision-resistant across federations, and SHOULD be constructed
+        from a URL that uniquely identifies the Accrediting Federation or trust
+        framework.
+      </t>
+      <t>
+        The Trust Mark Definition referenced by the Trust Mark <spanx
+        style="verb">ref</spanx> Claim MUST specify, at minimum: the accreditation
+        criteria; the set of credential types in scope; any additional matching
+        constraints (<xref target="accredited-credentials"/>); the renewal and
+        revocation process; and the Trust Chain Constraints (<xref
+        target="OpenID.Federation"/>, Section 6.2) that a Relying Party MUST apply
+        to the Credential Issuer's Trust Chain (<xref target="rp-processing"/>,
+        step 6).
+      </t>
+    </section>
+
+    <section anchor="tm-profile" title="Trust Mark Profile">
+      <t>
+        A Trust Mark conforming to this profile is a JWT with the <spanx
+        style="verb">typ</spanx> header parameter <spanx
+        style="verb">trust-mark+jwt</spanx> and the Claims defined in <xref
+        target="OpenID.Federation"/>, Section 7.1 (<spanx
+        style="verb">iss</spanx>, <spanx style="verb">sub</spanx>, <spanx
+        style="verb">trust_mark_type</spanx>, <spanx style="verb">iat</spanx>,
+        and optionally <spanx style="verb">exp</spanx>, <spanx
+        style="verb">ref</spanx>, <spanx style="verb">delegation</spanx>, <spanx
+        style="verb">logo_uri</spanx>). In addition, the following Claims are
+        defined by this profile.
+      </t>
+
+      <section anchor="subject-trust-anchor" title="subject_trust_anchor">
+        <t>
+          REQUIRED. String. The Entity Identifier of the Subject Trust Anchor,
+          i.e. the Trust Anchor at which the Trust Chain for the Entity identified
+          by the <spanx style="verb">sub</spanx> Claim MUST terminate. The value
+          MUST be an Entity Identifier as defined by <xref
+          target="OpenID.Federation"/>.
+        </t>
+      </section>
+
+      <section anchor="sta-thumbprints" title="subject_trust_anchor_jwks_thumbprints">
+        <t>
+          REQUIRED. Array of strings. A non-empty array of JWK SHA-256
+          Thumbprints <xref target="RFC7638"/>, base64url-encoded, each
+          identifying a Federation Entity Key of the Subject Trust Anchor
+          identified by <spanx style="verb">subject_trust_anchor</spanx>.
+        </t>
+        <t>
+          When validating the Credential Issuer's Trust Chain, the Relying Party
+          MUST verify that the terminating Trust Anchor publishes at least one
+          Federation Entity Key whose thumbprint matches a value in this array,
+          and MUST use only such matched key(s) as the trust root for that Trust
+          Chain.
+        </t>
+        <t>
+          Thumbprints, rather than a full JWK Set, are pinned so that Subject
+          Trust Anchor key rollover does not invalidate outstanding Trust Marks;
+          multiple values MAY be present to span a rollover. A deployment that
+          requires re-accreditation on Subject Trust Anchor key rollover MAY
+          instead pin a single thumbprint.
+        </t>
+        <t>
+          Note: pinning the Subject Trust Anchor's keys (rather than only its
+          Entity Identifier) ensures the security of the cross-federation Trust
+          Chain reduces to the Trust Mark Issuer's signature, and does not depend
+          on transport security at the Subject Trust Anchor's endpoints.
+        </t>
+      </section>
+
+      <section anchor="accredited-credentials" title="accredited_credentials">
+        <t>
+          REQUIRED. A non-empty JSON array of objects. Each object identifies a
+          credential type that the Credential Issuer (<spanx
+          style="verb">sub</spanx>) is accredited to issue under this Trust Mark,
+          and MAY further constrain the accreditation. Each object has the
+          following members:
+          <list style="hanging">
+            <t hangText="format:">REQUIRED. String. The Credential Format
+            Identifier (for example, a format identifier registered for OpenID
+            for Verifiable Credential Issuance), such as <spanx
+            style="verb">ldp_vc</spanx>, <spanx style="verb">jwt_vc_json</spanx>,
+            or <spanx style="verb">dc+sd-jwt</spanx>.</t>
+            <t hangText="(type identifier):">A credential type identifier
+            appropriate to <spanx style="verb">format</spanx>. For W3C Verifiable
+            Credentials Data Model formats (e.g. <spanx
+            style="verb">ldp_vc</spanx>, <spanx style="verb">jwt_vc_json</spanx>),
+            <spanx style="verb">type</spanx> is REQUIRED and is a JSON array of
+            strings naming the Credential <spanx style="verb">type</spanx> values,
+            other than the base <spanx style="verb">VerifiableCredential</spanx>,
+            that scope the accreditation. For IETF SD-JWT VC (<spanx
+            style="verb">dc+sd-jwt</spanx>), <spanx style="verb">vct</spanx> is
+            REQUIRED and is the string Verifiable Credential Type.</t>
+            <t hangText="constraints:">OPTIONAL. A JSON object of additional Claim
+            constraints that a presented Verifiable Credential MUST satisfy to be
+            considered covered by this accreditation entry (for example, a
+            qualification identifier carried as a Credential Claim). The
+            interpretation of <spanx style="verb">constraints</spanx> is defined
+            by the Trust Mark Definition (<xref target="tm-type"/>).</t>
+          </list>
+        </t>
+        <t>
+          A deployment SHOULD issue one Trust Mark per (Credential Issuer,
+          credential type) pair, so that the Trust Mark Status mechanism (<xref
+          target="OpenID.Federation"/>, Section 8.4) can revoke a single
+          accreditation independently of others.
+        </t>
+        <t>
+          The credential type identifiers in <spanx
+          style="verb">accredited_credentials</spanx> are governed by their
+          respective type authorities and are independent of both the Accrediting
+          Federation and the Subject Federation.
+        </t>
+      </section>
+    </section>
+
+    <section anchor="delegation" title="Trust Mark Delegation">
+      <t>
+        Where the Trust Mark Owner and the Trust Mark Issuer are different
+        Entities - which is the expected case for this profile, with the
+        Accrediting Federation operator owning the Trust Mark type and an
+        accreditation authority issuing it - the Trust Mark MUST contain a <spanx
+        style="verb">delegation</spanx> Claim as defined in <xref
+        target="OpenID.Federation"/>, Section 7.2, and the AF Trust Anchor MUST
+        publish the corresponding <spanx style="verb">trust_mark_owners</spanx>
+        entry (<xref target="af-config"/>).
+      </t>
+    </section>
+
+    <section anchor="af-config" title="Accrediting Federation Trust Anchor Configuration">
+      <t>
+        The Accrediting Federation Trust Anchor MUST recognize the Trust Mark
+        Issuer for the profile's Trust Mark type by listing it in the <spanx
+        style="verb">trust_mark_issuers</spanx> Claim of its Entity
+        Configuration.
+      </t>
+      <t>
+        Where Trust Mark Delegation is used (<xref target="delegation"/>), the AF
+        Trust Anchor MUST publish a <spanx style="verb">trust_mark_owners</spanx>
+        entry for the Trust Mark type, containing the Owner's Entity Identifier
+        (<spanx style="verb">sub</spanx>) and the Owner's signing keys (<spanx
+        style="verb">jwks</spanx>).
+      </t>
+    </section>
+
+    <section anchor="rp-processing" title="Relying Party Processing">
+      <t>
+        On receiving a Verifiable Credential whose acceptance is gated on
+        accreditation under this profile, the Relying Party MUST perform all of
+        the following steps. Failure of any step means the accreditation is not
+        established and the Credential MUST NOT be accepted on the basis of this
+        profile.
+        <list style="numbers">
+          <t>Obtain the Trust Mark. Obtain the Trust Mark from one of: the
+          Credential Issuer's <spanx style="verb">trust_marks</spanx> Claim (<xref
+          target="advertisement"/>); the Trust Mark Issuer's Trust Marked Entities
+          Listing (<xref target="OpenID.Federation"/>, Section 8.5); or the
+          Verifiable Credential itself (<xref target="binding"/>). The <spanx
+          style="verb">trust_mark_type</spanx> MUST equal the Trust Mark type
+          expected by the Relying Party.</t>
+          <t>Recognize the Trust Mark Issuer. The Trust Mark <spanx
+          style="verb">iss</spanx> MUST appear in the Relying Party's Accrediting
+          Federation Trust Anchor <spanx style="verb">trust_mark_issuers</spanx>
+          Claim for this <spanx style="verb">trust_mark_type</spanx>. The Relying
+          Party MUST resolve and validate a Trust Chain for the Trust Mark Issuer
+          to that Trust Anchor (<xref target="OpenID.Federation"/>, Sections 7.3
+          and 10) and obtain the Issuer's Federation Entity Keys.</t>
+          <t>Validate delegation. If the Trust Mark contains a <spanx
+          style="verb">delegation</spanx> Claim, the Relying Party MUST validate
+          it against the <spanx style="verb">trust_mark_owners</spanx> entry for
+          this <spanx style="verb">trust_mark_type</spanx> in the AF Trust Anchor,
+          per <xref target="OpenID.Federation"/>, Section 7.2.</t>
+          <t>Verify the Trust Mark. The Relying Party MUST verify the Trust Mark
+          signature using the Trust Mark Issuer's Federation Entity Keys, and MUST
+          verify <spanx style="verb">iat</spanx> and, if present, <spanx
+          style="verb">exp</spanx>.</t>
+          <t>Bind subject to issuer. The Trust Mark <spanx
+          style="verb">sub</spanx> MUST equal the <spanx style="verb">iss</spanx>
+          (issuer identifier) of the Verifiable Credential.</t>
+          <t>Resolve the Credential Issuer Trust Chain. The Relying Party MUST
+          resolve a Trust Chain for the Verifiable Credential's issuer that
+          terminates at <spanx style="verb">subject_trust_anchor</spanx>. The
+          terminating Trust Anchor MUST publish a Federation Entity Key whose JWK
+          SHA-256 Thumbprint matches a value in <spanx
+          style="verb">subject_trust_anchor_jwks_thumbprints</spanx>, and that key
+          MUST be used as the trust root. The Relying Party MUST apply the Trust
+          Chain Constraints specified by the Trust Mark Definition (<xref
+          target="tm-type"/>) to this Trust Chain.</t>
+          <t>Verify Credential authenticity. The Relying Party MUST verify the
+          Verifiable Credential using the issuer keys established by the resolved
+          Trust Chain.</t>
+          <t>Verify coverage. The Verifiable Credential MUST match at least one
+          entry of <spanx style="verb">accredited_credentials</spanx>: its format
+          and credential type identifier MUST match, and any <spanx
+          style="verb">constraints</spanx> in that entry MUST be satisfied by the
+          Credential.</t>
+          <t>Verify status. Unless the Relying Party's policy permits reliance on
+          the Trust Mark <spanx style="verb">exp</spanx> alone, the Relying Party
+          MUST verify that the Trust Mark is active using the Trust Mark Status
+          mechanism (<xref target="OpenID.Federation"/>, Section 8.4).</t>
+        </list>
+      </t>
+      <t>
+        A Relying Party that already trusts <spanx
+        style="verb">subject_trust_anchor</spanx> natively MAY omit the thumbprint
+        comparison in step 6, but MUST still require the Trust Chain to terminate
+        at <spanx style="verb">subject_trust_anchor</spanx>.
+      </t>
+    </section>
+
+    <section anchor="advertisement" title="Advertisement and Trust Domains">
+      <section anchor="adv-ci" title="Advertisement by the Credential Issuer">
+        <t>
+          The Credential Issuer SHOULD advertise the Trust Mark in the <spanx
+          style="verb">trust_marks</spanx> Claim of its Entity Configuration, so
+          that Relying Parties can discover it during normal resolution. Each
+          array entry contains the <spanx style="verb">trust_mark_type</spanx> and
+          the compact serialization of the <spanx
+          style="verb">trust-mark+jwt</spanx> (<xref target="OpenID.Federation"/>,
+          Section 3).
+        </t>
+        <t>
+          The Trust Mark is signed by the Trust Mark Issuer. Its inclusion in the
+          Credential Issuer's self-signed Entity Configuration is solely a means
+          of advertisement and carries no trust weight of its own; the Credential
+          Issuer's signature over its Entity Configuration does not attest to the
+          Trust Mark's content. The Trust Mark's authority derives entirely from
+          the Trust Mark Issuer's signature, validated per <xref
+          target="rp-processing"/>.
+        </t>
+      </section>
+
+      <section anchor="trust-domains" title="Trust Domains">
+        <t>
+          Recognition of the Trust Mark Issuer is REQUIRED only within the
+          federation(s) whose Relying Parties act on the Trust Mark - that is, the
+          Accrediting Federation. The Subject Federation is NOT REQUIRED to
+          recognize the Trust Mark Issuer, and its Trust Anchor neither validates
+          nor endorses Trust Marks carried in its subordinate Entities' Entity
+          Configurations. An unrecognized Trust Mark is ignored by parties that do
+          not recognize its Issuer and does not affect the validity of the
+          Credential Issuer's Entity Statements or Trust Chain within the Subject
+          Federation.
+        </t>
+      </section>
+
+      <section anchor="resolver-behaviour" title="Resolver Behaviour">
+        <t>
+          A Resolver (<xref target="OpenID.Federation"/>, Section 8.3) returns
+          only verified Trust Marks and omits Trust Marks it cannot verify or that
+          are not active. A Resolver operating in the Subject Federation therefore
+          omits Accrediting-Federation Trust Marks from its resolve responses,
+          because it does not recognize the Trust Mark Issuer; this is expected
+          and is not an error.
+        </t>
+        <t>
+          Consequently, a Relying Party MUST validate the Trust Mark within a
+          trust context in which the Trust Mark Issuer is recognized (that is,
+          against the Accrediting Federation Trust Anchor, per <xref
+          target="rp-processing"/>). A Relying Party MUST NOT rely on a
+          Subject-Federation resolve response having included the Trust Mark in
+          its verified set.
+        </t>
+      </section>
+    </section>
+
+    <section anchor="binding" title="Binding the Trust Mark to a Verifiable Credential">
+      <t>
+        A Credential Issuer MAY embed the Trust Mark in the Verifiable Credentials
+        it issues. Embedding is an OPTIONAL convenience that supports offline and
+        single-message verification; it does not replace the authoritative source
+        (the Credential Issuer's <spanx style="verb">trust_marks</spanx> Claim and
+        the Trust Mark Status mechanism). Where current accreditation status is
+        required by policy, the Relying Party MUST still perform <xref
+        target="rp-processing"/>, step 9.
+      </t>
+
+      <section anchor="binding-vcdm" title="W3C Verifiable Credentials Data Model">
+        <t>
+          For credentials expressed using the W3C Verifiable Credentials Data
+          Model 2.0 <xref target="VCDM2"/>, the Trust Mark MUST be conveyed using
+          the <spanx style="verb">termsOfUse</spanx> property, which carries
+          issuer-asserted policy under which the Credential was issued. This
+          profile defines a <spanx style="verb">termsOfUse</spanx> entry with the
+          following shape:
+          <list style="hanging">
+            <t hangText="type:">REQUIRED. MUST include the value <spanx
+            style="verb">OpenIDFederationTrustMark</spanx>.</t>
+            <t hangText="trustMarkType:">REQUIRED. String. MUST equal the embedded
+            Trust Mark's <spanx style="verb">trust_mark_type</spanx>.</t>
+            <t hangText="trustMark:">REQUIRED. String. The compact serialization
+            of the <spanx style="verb">trust-mark+jwt</spanx>.</t>
+          </list>
+        </t>
+        <t>
+          The <spanx style="verb">type</spanx> value and its properties MUST be
+          defined by a JSON-LD context that is referenced from the Credential's
+          <spanx style="verb">@context</spanx>. A Relying Party processing the
+          embedded Trust Mark MUST validate it per <xref target="rp-processing"/>;
+          the embedded representation is informative until so validated.
+        </t>
+        <figure>
+          <preamble>Example (non-normative):</preamble>
+          <artwork><![CDATA[
+"termsOfUse": [
+  {
+    "type": "OpenIDFederationTrustMark",
+    "trustMarkType": "https://accrediting.example/trust-marks/accredited-issuer",
+    "trustMark": "<compact trust-mark+jwt>"
+  }
+]
+]]></artwork>
+        </figure>
+        <t>
+          The Trust Mark <spanx style="verb">exp</spanx>, if present, SHOULD NOT
+          be later than the Credential's own expiry. A Credential Issuer MUST
+          define a policy for Credentials already issued at the time an
+          accreditation is subsequently revoked.
+        </t>
+      </section>
+
+      <section anchor="binding-other" title="Other Credential Formats">
+        <t>
+          For Credential formats that do not support <spanx
+          style="verb">termsOfUse</spanx> (for example, IETF SD-JWT VC <xref
+          target="SD-JWT-VC"/>), a deployment MAY define an equivalent claim
+          carrying the same three members. Such a claim SHOULD be present
+          unconditionally (not selectively disclosable), since it concerns the
+          issuer rather than the subject and a Relying Party requires it to
+          evaluate accreditation. The processing rules of <xref
+          target="rp-processing"/> apply unchanged.
+        </t>
+      </section>
+    </section>
+
+    <section anchor="security" title="Security Considerations">
+      <t>
+        The security considerations of <xref target="OpenID.Federation"/> apply.
+        In addition:
+        <list style="symbols">
+          <t>The Trust Mark Issuer is a cross-federation trust-anchor authority.
+          Trusting a Trust Mark means trusting the <spanx
+          style="verb">subject_trust_anchor</spanx> and <spanx
+          style="verb">subject_trust_anchor_jwks_thumbprints</spanx> it asserts. A
+          compromised or negligent Trust Mark Issuer can introduce an
+          attacker-controlled Trust Anchor under which forged Credentials resolve.
+          Deployments SHOULD constrain the Trust Mark Issuer's authority - for
+          example, the Accrediting Federation Trust Anchor MAY publish an
+          allow-list of permitted Subject Trust Anchors or Subject Federations,
+          and Relying Parties MAY require <spanx
+          style="verb">subject_trust_anchor</spanx> to appear on that
+          allow-list.</t>
+          <t>Identifier binding. A Relying Party MUST bind, in a single
+          evaluation, that the Trust Mark <spanx style="verb">sub</spanx>, the
+          Verifiable Credential issuer identifier, and the subject of the resolved
+          Trust Chain are the same Entity, and that this Trust Chain terminates at
+          the pinned <spanx style="verb">subject_trust_anchor</spanx>. Omitting
+          any leg permits substitution attacks.</t>
+          <t>Key pinning. Pinning Subject Trust Anchor keys (<xref
+          target="sta-thumbprints"/>), rather than only its identifier, prevents
+          the cross-federation bootstrap from depending on transport-layer
+          security at the Subject Trust Anchor's endpoints.</t>
+          <t>Constraints on dynamically introduced Trust Anchors. Deployment-side
+          per-Trust-Anchor constraints (entity type, naming, maximum path length)
+          cannot be applied to a Subject Trust Anchor that is not configured at
+          the Relying Party. Such constraints MUST instead be expressed in the
+          Trust Mark Definition (<xref target="tm-type"/>) and applied per <xref
+          target="rp-processing"/>, step 6, so that all Relying Parties scope
+          Subject-Federation Trust Chains identically.</t>
+          <t>Non-bootstrappable Issuer. The Trust Mark Issuer MUST be recognized
+          and resolvable in the Accrediting Federation independently of the Trust
+          Mark; a deployment MUST NOT attempt to convey the Trust Mark Issuer's
+          trust root inside the Trust Mark.</t>
+        </list>
+      </t>
+    </section>
+
+    <section anchor="privacy" title="Privacy Considerations">
+      <t>
+        The privacy considerations of <xref target="OpenID.Federation"/> apply,
+        including those for the Trust Mark Status mechanism (Section 19.2), which
+        can disclose a Relying Party's interest in a particular subject to the
+        Trust Mark Issuer.
+      </t>
+      <t>
+        A Trust Mark under this profile asserts facts about the Credential Issuer,
+        not about the Credential subject, and contains no subject personal data;
+        embedding it in a Credential (<xref target="binding"/>) introduces no
+        additional correlation of the subject.
+      </t>
+    </section>
+
+    <section anchor="iana" title="IANA Considerations">
+      <t>
+        This profile defines the Trust Mark Claims <spanx
+        style="verb">subject_trust_anchor</spanx>, <spanx
+        style="verb">subject_trust_anchor_jwks_thumbprints</spanx>, and <spanx
+        style="verb">accredited_credentials</spanx> for use within <spanx
+        style="verb">trust-mark+jwt</spanx> JWTs, and the W3C VCDM <spanx
+        style="verb">termsOfUse</spanx> type <spanx
+        style="verb">OpenIDFederationTrustMark</spanx>. Registration of these
+        names in the appropriate registries is to be determined.
+      </t>
+    </section>
+
+  </middle>
+
+  <back>
+    <references title="Normative References">
+
+      <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119">
+        <front>
+          <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+          <author initials="S." surname="Bradner" fullname="Scott Bradner"/>
+          <date year="1997" month="March"/>
+        </front>
+        <seriesInfo name="BCP" value="14"/>
+        <seriesInfo name="RFC" value="2119"/>
+      </reference>
+
+      <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174">
+        <front>
+          <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+          <author initials="B." surname="Leiba" fullname="Barry Leiba"/>
+          <date year="2017" month="May"/>
+        </front>
+        <seriesInfo name="BCP" value="14"/>
+        <seriesInfo name="RFC" value="8174"/>
+      </reference>
+
+      <reference anchor="RFC7519" target="https://www.rfc-editor.org/info/rfc7519">
+        <front>
+          <title>JSON Web Token (JWT)</title>
+          <author initials="M." surname="Jones" fullname="Michael B. Jones"/>
+          <author initials="J." surname="Bradley" fullname="John Bradley"/>
+          <author initials="N." surname="Sakimura" fullname="Nat Sakimura"/>
+          <date year="2015" month="May"/>
+        </front>
+        <seriesInfo name="RFC" value="7519"/>
+      </reference>
+
+      <reference anchor="RFC7638" target="https://www.rfc-editor.org/info/rfc7638">
+        <front>
+          <title>JSON Web Key (JWK) Thumbprint</title>
+          <author initials="M." surname="Jones" fullname="Michael B. Jones"/>
+          <author initials="N." surname="Sakimura" fullname="Nat Sakimura"/>
+          <date year="2015" month="September"/>
+        </front>
+        <seriesInfo name="RFC" value="7638"/>
+      </reference>
+
+      <reference anchor="OpenID.Federation"
+                 target="https://openid.net/specs/openid-federation-1_1.html">
+        <front>
+          <title>OpenID Federation 1.1</title>
+          <author initials="R." surname="Hedberg" fullname="Roland Hedberg"/>
+          <author initials="M.B." surname="Jones" fullname="Michael B. Jones"/>
+          <author initials="A." surname="Solberg" fullname="Andreas Solberg"/>
+          <author initials="J." surname="Bradley" fullname="John Bradley"/>
+          <author initials="G." surname="De Marco" fullname="Giuseppe De Marco"/>
+          <author initials="V." surname="Dzhuvinov" fullname="Vladimir Dzhuvinov"/>
+          <date year="2026" month="May"/>
+        </front>
+      </reference>
+
+      <reference anchor="VCDM2"
+                 target="https://www.w3.org/TR/vc-data-model-2.0/">
+        <front>
+          <title>Verifiable Credentials Data Model v2.0</title>
+          <author initials="M." surname="Sporny" fullname="Manu Sporny"/>
+          <author initials="D." surname="Longley" fullname="Dave Longley"/>
+          <author initials="D." surname="Chadwick" fullname="David Chadwick"/>
+          <date year="2025" month="May"/>
+        </front>
+      </reference>
+
+    </references>
+
+    <references title="Informative References">
+
+      <reference anchor="SD-JWT-VC"
+                 target="https://datatracker.ietf.org/doc/draft-ietf-oauth-sd-jwt-vc/">
+        <front>
+          <title>SD-JWT-based Verifiable Credentials (SD-JWT VC)</title>
+          <author initials="O." surname="Terbu" fullname="Oliver Terbu"/>
+          <author initials="D." surname="Fett" fullname="Daniel Fett"/>
+          <author initials="B." surname="Campbell" fullname="Brian Campbell"/>
+          <date year="2025"/>
+        </front>
+      </reference>
+
+      <reference anchor="RFC8725" target="https://www.rfc-editor.org/info/rfc8725">
+        <front>
+          <title>JSON Web Token Best Current Practices</title>
+          <author initials="Y." surname="Sheffer" fullname="Yaron Sheffer"/>
+          <author initials="D." surname="Hardt" fullname="Dick Hardt"/>
+          <author initials="M." surname="Jones" fullname="Michael B. Jones"/>
+          <date year="2020" month="February"/>
+        </front>
+        <seriesInfo name="BCP" value="225"/>
+        <seriesInfo name="RFC" value="8725"/>
+      </reference>
+
+    </references>
+
+    <section anchor="example" title="Non-Normative Example: Education and Healthcare">
+      <t>
+        This appendix instantiates the profile for a vocational-education
+        Credential Issuer accredited for healthcare use across two federations.
+        All identifiers are fictional and use the <spanx
+        style="verb">.example</spanx> reserved domain.
+        <list style="symbols">
+          <t>Accrediting Federation Trust Anchor (Trust Mark Owner):
+          https://trust-anchor.healthcare-federation.example</t>
+          <t>Trust Mark Issuer (accreditation authority):
+          https://accreditation-council.healthcare-federation.example</t>
+          <t>Subject Federation Trust Anchor:
+          https://trust-anchor.education-federation.example</t>
+          <t>Credential Issuer (Leaf Entity in the Subject Federation):
+          https://riverside-college.education-federation.example</t>
+          <t>Trust Mark type:
+          https://healthcare-federation.example/trust-marks/accredited-care-programme-issuer</t>
+          <t>Credential type (governed externally):
+          https://diploma-registry.example/vct/vocational-diploma</t>
+        </list>
+      </t>
+
+      <figure>
+        <preamble>Trust Mark (typ: trust-mark+jwt):</preamble>
+        <artwork><![CDATA[
+{
+  "iss": "https://accreditation-council.healthcare-federation.example",
+  "sub": "https://riverside-college.education-federation.example",
+  "trust_mark_type":
+    "https://healthcare-federation.example/trust-marks/accredited-care-programme-issuer",
+  "iat": 1718000000,
+  "exp": 1749536000,
+  "ref": "https://healthcare-federation.example/trust-marks/.../criteria",
+  "delegation": "<trust-mark-delegation+jwt>",
+  "subject_trust_anchor": "https://trust-anchor.education-federation.example",
+  "subject_trust_anchor_jwks_thumbprints": [
+    "NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs"
+  ],
+  "accredited_credentials": [
+    {
+      "format": "dc+sd-jwt",
+      "vct": "https://diploma-registry.example/vct/vocational-diploma",
+      "constraints": {
+        "qualification": {
+          "framework": "national-qualifications-framework",
+          "code": "nursing-level-4"
+        }
+      }
+    }
+  ]
+}
+]]></artwork>
+      </figure>
+
+      <figure>
+        <preamble>AF Trust Anchor Entity Configuration (excerpt):</preamble>
+        <artwork><![CDATA[
+{
+  "trust_mark_issuers": {
+    "https://healthcare-federation.example/trust-marks/accredited-care-programme-issuer": [
+      "https://accreditation-council.healthcare-federation.example"
+    ]
+  },
+  "trust_mark_owners": {
+    "https://healthcare-federation.example/trust-marks/accredited-care-programme-issuer": {
+      "sub": "https://trust-anchor.healthcare-federation.example",
+      "jwks": { "keys": [ { "kty": "..." } ] }
+    }
+  }
+}
+]]></artwork>
+      </figure>
+
+      <figure>
+        <preamble>Credential Issuer Entity Configuration (excerpt):</preamble>
+        <artwork><![CDATA[
+{
+  "iss": "https://riverside-college.education-federation.example",
+  "sub": "https://riverside-college.education-federation.example",
+  "trust_marks": [
+    {
+      "trust_mark_type":
+        "https://healthcare-federation.example/trust-marks/accredited-care-programme-issuer",
+      "trust_mark": "<compact trust-mark+jwt>"
+    }
+  ]
+}
+]]></artwork>
+      </figure>
+
+      <figure>
+        <preamble>W3C VCDM credential with embedded Trust Mark (excerpt):</preamble>
+        <artwork><![CDATA[
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://healthcare-federation.example/contexts/trust-mark-v1"
+  ],
+  "type": ["VerifiableCredential", "VocationalDiploma"],
+  "issuer": "https://riverside-college.education-federation.example",
+  "credentialSubject": {
+    "qualification": {
+      "framework": "national-qualifications-framework",
+      "code": "nursing-level-4"
+    }
+  },
+  "termsOfUse": [
+    {
+      "type": "OpenIDFederationTrustMark",
+      "trustMarkType":
+        "https://healthcare-federation.example/trust-marks/accredited-care-programme-issuer",
+      "trustMark": "<compact trust-mark+jwt>"
+    }
+  ]
+}
+]]></artwork>
+      </figure>
+    </section>
+
+    <section anchor="notices" title="Notices">
+      <t>
+        This is a non-normative working document created during design
+        discussion. It is not an OpenID Foundation specification and has not been
+        adopted by any working group. It profiles OpenID Federation and reuses the
+        OpenID Foundation document template solely for authoring convenience.
+      </t>
+    </section>
+
+  </back>
+</rfc>

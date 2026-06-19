@@ -1,0 +1,5 @@
+# Build outputs (HTML is the authoritative published copy, built by CI)
+*.txt
+*.html
+html/
+.cache/
