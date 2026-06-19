@@ -18,8 +18,8 @@
         This profile defines how a Trust Mark issued within an Accrediting
         Federation can carry the information needed for a Relying Party in that
         federation to establish trust in a Credential Issuer anchored in a
-        separate Subject Federation, without a shared Trust Anchor and without
-        pre-configuring the Subject Federation's Trust Anchor. It further defines
+        separate Credential Issuer Federation, without a shared Trust Anchor and without
+        pre-configuring the Credential Issuer Federation's Trust Anchor. It further defines
         how such a Trust Mark is bound to the Verifiable Credentials issued by
         that Credential Issuer using the W3C Verifiable Credentials Data Model.
        
@@ -1239,7 +1239,7 @@ li > p:last-of-type:only-child {
 <td class="right">June 2026</td>
 </tr></thead>
 <tfoot><tr>
-<td class="left">(editor)</td>
+<td class="left">Klomp</td>
 <td class="center">Standards Track</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
@@ -1256,9 +1256,9 @@ li > p:last-of-type:only-child {
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
-      <div class="author-name">N. (editor), <span class="editor">Ed.</span>
+      <div class="author-name">N. Klomp, <span class="editor">Ed.</span>
 </div>
-<div class="org">Sphereon</div>
+<div class="org">Sphereon International B.V.</div>
 </div>
 </dd>
 </dl>
@@ -1276,8 +1276,8 @@ li > p:last-of-type:only-child {
         This profile defines how a Trust Mark issued within an Accrediting
         Federation can carry the information needed for a Relying Party in that
         federation to establish trust in a Credential Issuer anchored in a
-        separate Subject Federation, without a shared Trust Anchor and without
-        pre-configuring the Subject Federation's Trust Anchor. It further defines
+        separate Credential Issuer Federation, without a shared Trust Anchor and without
+        pre-configuring the Credential Issuer Federation's Trust Anchor. It further defines
         how such a Trust Mark is bound to the Verifiable Credentials issued by
         that Credential Issuer using the W3C Verifiable Credentials Data Model.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 </section>
@@ -1311,10 +1311,10 @@ li > p:last-of-type:only-child {
             <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-trust-mark-profile" class="internal xref">Trust Mark Profile</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
-                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-subject_trust_anchor" class="internal xref">subject_trust_anchor</a></p>
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-credential_issuer_trust_anc" class="internal xref">credential_issuer_trust_anchor</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
-                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-subject_trust_anchor_jwks_t" class="internal xref">subject_trust_anchor_jwks_thumbprints</a></p>
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-credential_issuer_trust_anch" class="internal xref">credential_issuer_trust_anchor_jwks_thumbprints</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
                 <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-accredited_credentials" class="internal xref">accredited_credentials</a></p>
@@ -1409,7 +1409,7 @@ li > p:last-of-type:only-child {
 <ul class="normal">
 <li class="normal" id="section-1-3.1">
           <p id="section-1-3.1.1">The Credential Issuer is a Leaf Entity whose Entity Statements are
-          anchored in the Subject Federation.<a href="#section-1-3.1.1" class="pilcrow">¶</a></p>
+          anchored in the Credential Issuer Federation.<a href="#section-1-3.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-1-3.2">
           <p id="section-1-3.2.1">The accreditation is expressed as a Trust Mark issued by a Trust
@@ -1419,12 +1419,12 @@ li > p:last-of-type:only-child {
           <p id="section-1-3.3.1">A Relying Party that trusts the Accrediting Federation's Trust
           Anchor needs to trust the accreditation and to verify the authenticity
           of the Credential Issuer and its issued Credentials, even though it
-          does not natively trust the Subject Federation's Trust Anchor.<a href="#section-1-3.3.1" class="pilcrow">¶</a></p>
+          does not natively trust the Credential Issuer Federation's Trust Anchor.<a href="#section-1-3.3.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-1-4">
         The mechanism is to convey, inside the Trust Mark, the identity and keys
-        of the Subject Federation's Trust Anchor, so the Relying Party can
+        of the Credential Issuer Federation's Trust Anchor, so the Relying Party can
         resolve and validate the Credential Issuer's Trust Chain on the basis of
         a Trust Mark it already trusts.<a href="#section-1-4" class="pilcrow">¶</a></p>
 <div id="requirements-language">
@@ -1459,15 +1459,15 @@ li > p:last-of-type:only-child {
             <code>trust_mark_issuers</code> Claim.<a href="#section-1.2-2.2" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.2-2.3">Subject Federation (SF):</dt>
+<dt id="section-1.2-2.3">Credential Issuer Federation (CIF):</dt>
           <dd style="margin-left: 1.5em" id="section-1.2-2.4">The federation in which the
             Credential Issuer is a Leaf Entity and whose Trust Anchor is
             authoritative for that Credential Issuer's Entity Statements.<a href="#section-1.2-2.4" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.2-2.5">Subject Trust Anchor:</dt>
-          <dd style="margin-left: 1.5em" id="section-1.2-2.6">The Trust Anchor of the Subject
-            Federation, at which the Credential Issuer's Trust Chain
+<dt id="section-1.2-2.5">Credential Issuer Trust Anchor:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.6">The Trust Anchor of the Credential
+            Issuer Federation, at which the Credential Issuer's Trust Chain
             terminates.<a href="#section-1.2-2.6" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
@@ -1475,7 +1475,7 @@ li > p:last-of-type:only-child {
           <dd style="margin-left: 1.5em" id="section-1.2-2.8">The Entity that issues
             Verifiable Credentials and that is the <code>sub</code>
             of the Trust Mark. The Credential Issuer is a Leaf Entity in the
-            Subject Federation.<a href="#section-1.2-2.8" class="pilcrow">¶</a>
+            Credential Issuer Federation.<a href="#section-1.2-2.8" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-1.2-2.9">Trust Mark Issuer (TMI):</dt>
@@ -1492,7 +1492,7 @@ li > p:last-of-type:only-child {
         <dd class="break"></dd>
 </dl>
 <p id="section-1.2-3">
-          The Accrediting Federation and the Subject Federation MAY be operated
+          The Accrediting Federation and the Credential Issuer Federation MAY be operated
           by different organizations and MUST NOT be assumed to share a Trust
           Anchor.<a href="#section-1.2-3" class="pilcrow">¶</a></p>
 </section>
@@ -1530,10 +1530,10 @@ li > p:last-of-type:only-child {
           Section 7.<a href="#section-2-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-2-2.2">
-          <p id="section-2-2.2.1">Credential Issuer authenticity (Subject Federation). The Relying
+          <p id="section-2-2.2.1">Credential Issuer authenticity (Credential Issuer Federation). The Relying
           Party establishes the Credential Issuer's keys and metadata by
-          resolving a Trust Chain that terminates at the Subject Trust Anchor.
-          The Relying Party learns to trust the Subject Trust Anchor from the
+          resolving a Trust Chain that terminates at the Credential Issuer Trust Anchor.
+          The Relying Party learns to trust the Credential Issuer Trust Anchor from the
           Trust Mark, which pins that Trust Anchor's identity and keys.<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
@@ -1541,12 +1541,12 @@ li > p:last-of-type:only-child {
         These two relationships meet only at the Relying Party. The Trust Mark
         Issuer's own Trust Chain MUST resolve to a Trust Anchor the Relying Party
         trusts (the AF Trust Anchor); the Credential Issuer's Trust Chain
-        resolves to the Subject Trust Anchor pinned in the Trust Mark.<a href="#section-2-3" class="pilcrow">¶</a></p>
+        resolves to the Credential Issuer Trust Anchor pinned in the Trust Mark.<a href="#section-2-3" class="pilcrow">¶</a></p>
 <p id="section-2-4">
         The recognition of the Trust Mark Issuer cannot itself be bootstrapped
         from the Trust Mark, because that recognition is the root of the Relying
         Party's trust in the accreditation. Consequently, this profile pins only
-        the Subject Trust Anchor inside the Trust Mark; the Trust Mark Issuer MUST
+        the Credential Issuer Trust Anchor inside the Trust Mark; the Trust Mark Issuer MUST
         be recognized natively in the Accrediting Federation (<a href="#trust-domains" class="auto internal xref">Section 8.2</a>).<a href="#section-2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1579,28 +1579,28 @@ li > p:last-of-type:only-child {
         A Trust Mark conforming to this profile is a JWT with the <code>typ</code> header parameter <code>trust-mark+jwt</code> and the Claims defined in <span>[<a href="#OpenID.Federation" class="cite xref">OpenID.Federation</a>]</span>, Section 7.1 (<code>iss</code>, <code>sub</code>, <code>trust_mark_type</code>, <code>iat</code>,
         and optionally <code>exp</code>, <code>ref</code>, <code>delegation</code>, <code>logo_uri</code>). In addition, the following Claims are
         defined by this profile.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<div id="subject-trust-anchor">
+<div id="credential-issuer-trust-anchor">
 <section id="section-4.1">
-        <h3 id="name-subject_trust_anchor">
-<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-subject_trust_anchor" class="section-name selfRef">subject_trust_anchor</a>
+        <h3 id="name-credential_issuer_trust_anc">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-credential_issuer_trust_anc" class="section-name selfRef">credential_issuer_trust_anchor</a>
         </h3>
 <p id="section-4.1-1">
-          REQUIRED. String. The Entity Identifier of the Subject Trust Anchor,
+          REQUIRED. String. The Entity Identifier of the Credential Issuer Trust Anchor,
           i.e. the Trust Anchor at which the Trust Chain for the Entity identified
           by the <code>sub</code> Claim MUST terminate. The value
           MUST be an Entity Identifier as defined by <span>[<a href="#OpenID.Federation" class="cite xref">OpenID.Federation</a>]</span>.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="sta-thumbprints">
+<div id="cita-thumbprints">
 <section id="section-4.2">
-        <h3 id="name-subject_trust_anchor_jwks_t">
-<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-subject_trust_anchor_jwks_t" class="section-name selfRef">subject_trust_anchor_jwks_thumbprints</a>
+        <h3 id="name-credential_issuer_trust_anch">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-credential_issuer_trust_anch" class="section-name selfRef">credential_issuer_trust_anchor_jwks_thumbprints</a>
         </h3>
 <p id="section-4.2-1">
           REQUIRED. Array of strings. A non-empty array of JWK SHA-256
           Thumbprints <span>[<a href="#RFC7638" class="cite xref">RFC7638</a>]</span>, base64url-encoded, each
-          identifying a Federation Entity Key of the Subject Trust Anchor
-          identified by <code>subject_trust_anchor</code>.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+          identifying a Federation Entity Key of the Credential Issuer Trust Anchor
+          identified by <code>credential_issuer_trust_anchor</code>.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
 <p id="section-4.2-2">
           When validating the Credential Issuer's Trust Chain, the Relying Party
           MUST verify that the terminating Trust Anchor publishes at least one
@@ -1608,16 +1608,16 @@ li > p:last-of-type:only-child {
           and MUST use only such matched key(s) as the trust root for that Trust
           Chain.<a href="#section-4.2-2" class="pilcrow">¶</a></p>
 <p id="section-4.2-3">
-          Thumbprints, rather than a full JWK Set, are pinned so that Subject
-          Trust Anchor key rollover does not invalidate outstanding Trust Marks;
+          Thumbprints, rather than a full JWK Set, are pinned so that Credential
+          Issuer Trust Anchor key rollover does not invalidate outstanding Trust Marks;
           multiple values MAY be present to span a rollover. A deployment that
-          requires re-accreditation on Subject Trust Anchor key rollover MAY
+          requires re-accreditation on Credential Issuer Trust Anchor key rollover MAY
           instead pin a single thumbprint.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
 <p id="section-4.2-4">
-          Note: pinning the Subject Trust Anchor's keys (rather than only its
+          Note: pinning the Credential Issuer Trust Anchor's keys (rather than only its
           Entity Identifier) ensures the security of the cross-federation Trust
           Chain reduces to the Trust Mark Issuer's signature, and does not depend
-          on transport security at the Subject Trust Anchor's endpoints.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+          on transport security at the Credential Issuer Trust Anchor's endpoints.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="accredited-credentials">
@@ -1666,7 +1666,7 @@ li > p:last-of-type:only-child {
 <p id="section-4.3-4">
           The credential type identifiers in <code>accredited_credentials</code> are governed by their
           respective type authorities and are independent of both the Accrediting
-          Federation and the Subject Federation.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
+          Federation and the Credential Issuer Federation.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1746,9 +1746,9 @@ li > p:last-of-type:only-child {
         <li id="section-7-2.6">
           <p id="section-7-2.6.1">Resolve the Credential Issuer Trust Chain. The Relying Party MUST
           resolve a Trust Chain for the Verifiable Credential's issuer that
-          terminates at <code>subject_trust_anchor</code>. The
+          terminates at <code>credential_issuer_trust_anchor</code>. The
           terminating Trust Anchor MUST publish a Federation Entity Key whose JWK
-          SHA-256 Thumbprint matches a value in <code>subject_trust_anchor_jwks_thumbprints</code>, and that key
+          SHA-256 Thumbprint matches a value in <code>credential_issuer_trust_anchor_jwks_thumbprints</code>, and that key
           MUST be used as the trust root. The Relying Party MUST apply the Trust
           Chain Constraints specified by the Trust Mark Definition (<a href="#tm-type" class="auto internal xref">Section 3</a>) to this Trust Chain.<a href="#section-7-2.6.1" class="pilcrow">¶</a></p>
 </li>
@@ -1771,9 +1771,9 @@ li > p:last-of-type:only-child {
 </li>
       </ol>
 <p id="section-7-3">
-        A Relying Party that already trusts <code>subject_trust_anchor</code> natively MAY omit the thumbprint
+        A Relying Party that already trusts <code>credential_issuer_trust_anchor</code> natively MAY omit the thumbprint
         comparison in step 6, but MUST still require the Trust Chain to terminate
-        at <code>subject_trust_anchor</code>.<a href="#section-7-3" class="pilcrow">¶</a></p>
+        at <code>credential_issuer_trust_anchor</code>.<a href="#section-7-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="advertisement">
@@ -1809,13 +1809,13 @@ li > p:last-of-type:only-child {
 <p id="section-8.2-1">
           Recognition of the Trust Mark Issuer is REQUIRED only within the
           federation(s) whose Relying Parties act on the Trust Mark - that is, the
-          Accrediting Federation. The Subject Federation is NOT REQUIRED to
+          Accrediting Federation. The Credential Issuer Federation is NOT REQUIRED to
           recognize the Trust Mark Issuer, and its Trust Anchor neither validates
           nor endorses Trust Marks carried in its subordinate Entities' Entity
           Configurations. An unrecognized Trust Mark is ignored by parties that do
           not recognize its Issuer and does not affect the validity of the
-          Credential Issuer's Entity Statements or Trust Chain within the Subject
-          Federation.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
+          Credential Issuer's Entity Statements or Trust Chain within the Credential
+          Issuer Federation.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="resolver-behaviour">
@@ -1826,7 +1826,7 @@ li > p:last-of-type:only-child {
 <p id="section-8.3-1">
           A Resolver (<span>[<a href="#OpenID.Federation" class="cite xref">OpenID.Federation</a>]</span>, Section 8.3) returns
           only verified Trust Marks and omits Trust Marks it cannot verify or that
-          are not active. A Resolver operating in the Subject Federation therefore
+          are not active. A Resolver operating in the Credential Issuer Federation therefore
           omits Accrediting-Federation Trust Marks from its resolve responses,
           because it does not recognize the Trust Mark Issuer; this is expected
           and is not an error.<a href="#section-8.3-1" class="pilcrow">¶</a></p>
@@ -1834,7 +1834,7 @@ li > p:last-of-type:only-child {
           Consequently, a Relying Party MUST validate the Trust Mark within a
           trust context in which the Trust Mark Issuer is recognized (that is,
           against the Accrediting Federation Trust Anchor, per <a href="#rp-processing" class="auto internal xref">Section 7</a>). A Relying Party MUST NOT rely on a
-          Subject-Federation resolve response having included the Trust Mark in
+          Credential-Issuer-Federation resolve response having included the Trust Mark in
           its verified set.<a href="#section-8.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1869,12 +1869,12 @@ li > p:last-of-type:only-child {
           <dd style="margin-left: 1.5em" id="section-9.1-2.2">REQUIRED. MUST include the value <code>OpenIDFederationTrustMark</code>.<a href="#section-9.1-2.2" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-9.1-2.3">trustMarkType:</dt>
+<dt id="section-9.1-2.3">trust_mark_type:</dt>
           <dd style="margin-left: 1.5em" id="section-9.1-2.4">REQUIRED. String. MUST equal the embedded
             Trust Mark's <code>trust_mark_type</code>.<a href="#section-9.1-2.4" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-9.1-2.5">trustMark:</dt>
+<dt id="section-9.1-2.5">trust_mark:</dt>
           <dd style="margin-left: 1.5em" id="section-9.1-2.6">REQUIRED. String. The compact serialization
             of the <code>trust-mark+jwt</code>.<a href="#section-9.1-2.6" class="pilcrow">¶</a>
 </dd>
@@ -1892,8 +1892,8 @@ li > p:last-of-type:only-child {
 "termsOfUse": [
   {
     "type": "OpenIDFederationTrustMark",
-    "trustMarkType": "https://accrediting.example/trust-marks/accredited-issuer",
-    "trustMark": "&lt;compact trust-mark+jwt&gt;"
+    "trust_mark_type": "https://accrediting.example/trust-marks/accredited-issuer",
+    "trust_mark": "&lt;compact trust-mark+jwt&gt;"
   }
 ]
 </pre><a href="#section-9.1-5" class="pilcrow">¶</a>
@@ -1931,13 +1931,13 @@ li > p:last-of-type:only-child {
 <ul class="normal">
 <li class="normal" id="section-10-2.1">
           <p id="section-10-2.1.1">The Trust Mark Issuer is a cross-federation trust-anchor authority.
-          Trusting a Trust Mark means trusting the <code>subject_trust_anchor</code> and <code>subject_trust_anchor_jwks_thumbprints</code> it asserts. A
+          Trusting a Trust Mark means trusting the <code>credential_issuer_trust_anchor</code> and <code>credential_issuer_trust_anchor_jwks_thumbprints</code> it asserts. A
           compromised or negligent Trust Mark Issuer can introduce an
           attacker-controlled Trust Anchor under which forged Credentials resolve.
           Deployments SHOULD constrain the Trust Mark Issuer's authority - for
           example, the Accrediting Federation Trust Anchor MAY publish an
-          allow-list of permitted Subject Trust Anchors or Subject Federations,
-          and Relying Parties MAY require <code>subject_trust_anchor</code> to appear on that
+          allow-list of permitted Credential Issuer Trust Anchors or Credential Issuer Federations,
+          and Relying Parties MAY require <code>credential_issuer_trust_anchor</code> to appear on that
           allow-list.<a href="#section-10-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-10-2.2">
@@ -1945,21 +1945,21 @@ li > p:last-of-type:only-child {
           evaluation, that the Trust Mark <code>sub</code>, the
           Verifiable Credential issuer identifier, and the subject of the resolved
           Trust Chain are the same Entity, and that this Trust Chain terminates at
-          the pinned <code>subject_trust_anchor</code>. Omitting
+          the pinned <code>credential_issuer_trust_anchor</code>. Omitting
           any leg permits substitution attacks.<a href="#section-10-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-10-2.3">
-          <p id="section-10-2.3.1">Key pinning. Pinning Subject Trust Anchor keys (<a href="#sta-thumbprints" class="auto internal xref">Section 4.2</a>), rather than only its identifier, prevents
+          <p id="section-10-2.3.1">Key pinning. Pinning Credential Issuer Trust Anchor keys (<a href="#cita-thumbprints" class="auto internal xref">Section 4.2</a>), rather than only its identifier, prevents
           the cross-federation bootstrap from depending on transport-layer
-          security at the Subject Trust Anchor's endpoints.<a href="#section-10-2.3.1" class="pilcrow">¶</a></p>
+          security at the Credential Issuer Trust Anchor's endpoints.<a href="#section-10-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-10-2.4">
           <p id="section-10-2.4.1">Constraints on dynamically introduced Trust Anchors. Deployment-side
           per-Trust-Anchor constraints (entity type, naming, maximum path length)
-          cannot be applied to a Subject Trust Anchor that is not configured at
+          cannot be applied to a Credential Issuer Trust Anchor that is not configured at
           the Relying Party. Such constraints MUST instead be expressed in the
           Trust Mark Definition (<a href="#tm-type" class="auto internal xref">Section 3</a>) and applied per <a href="#rp-processing" class="auto internal xref">Section 7</a>, step 6, so that all Relying Parties scope
-          Subject-Federation Trust Chains identically.<a href="#section-10-2.4.1" class="pilcrow">¶</a></p>
+          Credential-Issuer-Federation Trust Chains identically.<a href="#section-10-2.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-10-2.5">
           <p id="section-10-2.5.1">Non-bootstrappable Issuer. The Trust Mark Issuer MUST be recognized
@@ -1993,7 +1993,7 @@ li > p:last-of-type:only-child {
 <a href="#section-12" class="section-number selfRef">12. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
 <p id="section-12-1">
-        This profile defines the Trust Mark Claims <code>subject_trust_anchor</code>, <code>subject_trust_anchor_jwks_thumbprints</code>, and <code>accredited_credentials</code> for use within <code>trust-mark+jwt</code> JWTs, and the W3C VCDM <code>termsOfUse</code> type <code>OpenIDFederationTrustMark</code>. Registration of these
+        This profile defines the Trust Mark Claims <code>credential_issuer_trust_anchor</code>, <code>credential_issuer_trust_anchor_jwks_thumbprints</code>, and <code>accredited_credentials</code> for use within <code>trust-mark+jwt</code> JWTs, and the W3C VCDM <code>termsOfUse</code> type <code>OpenIDFederationTrustMark</code>. Registration of these
         names in the appropriate registries is to be determined.<a href="#section-12-1" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -2067,11 +2067,11 @@ li > p:last-of-type:only-child {
           https://accreditation-council.healthcare-federation.example<a href="#appendix-A-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="appendix-A-2.3">
-          <p id="appendix-A-2.3.1">Subject Federation Trust Anchor:
+          <p id="appendix-A-2.3.1">Credential Issuer Federation Trust Anchor:
           https://trust-anchor.education-federation.example<a href="#appendix-A-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="appendix-A-2.4">
-          <p id="appendix-A-2.4.1">Credential Issuer (Leaf Entity in the Subject Federation):
+          <p id="appendix-A-2.4.1">Credential Issuer (Leaf Entity in the Credential Issuer Federation):
           https://riverside-college.education-federation.example<a href="#appendix-A-2.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="appendix-A-2.5">
@@ -2095,8 +2095,8 @@ li > p:last-of-type:only-child {
   "exp": 1749536000,
   "ref": "https://healthcare-federation.example/trust-marks/.../criteria",
   "delegation": "&lt;trust-mark-delegation+jwt&gt;",
-  "subject_trust_anchor": "https://trust-anchor.education-federation.example",
-  "subject_trust_anchor_jwks_thumbprints": [
+  "credential_issuer_trust_anchor": "https://trust-anchor.education-federation.example",
+  "credential_issuer_trust_anchor_jwks_thumbprints": [
     "NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs"
   ],
   "accredited_credentials": [
@@ -2167,9 +2167,9 @@ li > p:last-of-type:only-child {
   "termsOfUse": [
     {
       "type": "OpenIDFederationTrustMark",
-      "trustMarkType":
+      "trust_mark_type":
         "https://healthcare-federation.example/trust-marks/accredited-care-programme-issuer",
-      "trustMark": "&lt;compact trust-mark+jwt&gt;"
+      "trust_mark": "&lt;compact trust-mark+jwt&gt;"
     }
   ]
 }
@@ -2196,10 +2196,10 @@ li > p:last-of-type:only-child {
       </h2>
 <address class="vcard">
         <div dir="auto" class="left"><span class="fn nameRole">Niels (<span class="role">editor</span>)</span></div>
-<div dir="auto" class="left"><span class="org">Sphereon</span></div>
+<div dir="auto" class="left"><span class="org">Sphereon International B.V.</span></div>
 <div class="email">
 <span>Email:</span>
-<a href="mailto:editor@example.com" class="email">editor@example.com</a>
+<a href="mailto:nklomp@sphereon.com" class="email">nklomp@sphereon.com</a>
 </div>
 </address>
 </section>
