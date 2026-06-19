@@ -41,6 +41,13 @@ jobs:
       - name: Build specification
         run: xml2rfc --html $SPEC.xml --out html/$BRANCH_NAME.html
 
+      - name: Publish default branch at site root
+        run: |
+          touch html/.nojekyll
+          if [ "$BRANCH_NAME" = "${{ github.event.repository.default_branch }}" ]; then
+            cp "html/$BRANCH_NAME.html" html/index.html
+          fi
+
       - name: Deploy to GitHub Pages
         if: success()
         uses: crazy-max/ghaction-github-pages@v2
